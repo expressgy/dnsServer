@@ -1,6 +1,6 @@
 // https://github.com/hursing/dns-server
 
-// The regular expression keyword in domain name.
+// The regular expression keyword in domain name.域名中的正则表达式关键字
 const domain = /hursing/
 // When keyword matched, resolve to this IP.
 const targetIp = '127.0.0.1'
