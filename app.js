@@ -2,7 +2,7 @@
 const dgram = require('dgram');
 
 //  创建DNS服务
-const DNS_Server = dgram.createSocket('udp4')
+const DNS_Server = dgram.createSocket('udp4');
 
 
 const DNS_List = {
@@ -17,7 +17,7 @@ const domain = /hursing/
 // When keyword matched, resolve to this IP.
 const targetIp = '127.0.0.1'
 // When keyword not matched, use the fallback dns server to resolve.
-const fallbackServer = '10.0.0.1'
+const fallbackServer = '192.168.31.1'
 
 
 
@@ -29,7 +29,7 @@ function copyBuffer(src, offset, dst) {
 }
 
 //  返回DNS解析信息
-function resolve(msg, rinfo, IP) {
+function resolve(msg, rinfo, IP, host) {
     const queryInfo = msg.slice(12)
     const response = Buffer.alloc(28 + queryInfo.length)
     let offset = 0
@@ -59,8 +59,7 @@ function resolve(msg, rinfo, IP) {
         response.writeUInt8(parseInt(value), offset)
         offset += 1
     })
-    // console.log(response.toString('hex'))
-
+    console.log(' SUCCESS :" '+ '\033[32m' + host + '\033[0m " ==> " \033[40;32m' + rinfo.address + '\033[0m "')
     DNS_Server.send(response, rinfo.port, rinfo.address, (err) => {
         if (err) {
             console.log(err)
@@ -110,10 +109,11 @@ function parseHost(msg) {
 DNS_Server.on('message', (msg, rinfo) => {
     // console.log(msg.toString('hex'))
     const host = parseHost(msg.slice(12))
-    console.log(`receive query: ${host}`)
+    process.stdout.write((rinfo.family + ' > ' + rinfo.address + ':' + rinfo.port + ' size ' + rinfo.size + ' |'))
     if(Object.keys(DNS_List).indexOf(host) > -1){
-        resolve(msg, rinfo, DNS_List[host])
+        resolve(msg, rinfo, DNS_List[host], host)
     }else{
+        console.log(' ERROR   :" '+ '\033[31m' + host + '\033[0m\033[0m "')
         forward(msg, rinfo)
     }
     // if (domain.test(host)) {
@@ -129,9 +129,31 @@ DNS_Server.on('error', (err) => {
 })
 
 DNS_Server.on('listening', () => {
+    //  获取监听信息
     const address = DNS_Server.address()
-    console.log(`server listening ${address.address}:${address.port}`)
+    // console.log('\033[40;30m TEST \033[0m')
+    // console.log('\033[41;30m TEST \033[0m')
+    // console.log('\033[42;30m TEST \033[0m')
+    // console.log('\033[43;30m TEST \033[0m')
+    // console.log('\033[44;30m TEST \033[0m')
+    // console.log('\033[45;37m TEST \033[0m')
+    // console.log('\033[46;30m TEST \033[0m')
+    // console.log('\033[47;30m TEST \033[0m')
+    // console.log('\033[40;31m TEST \033[0m')
+    // console.log('\033[40;32m TEST \033[0m')
+    // console.log('\033[40;33m TEST \033[0m')
+    // console.log('\033[40;34m TEST \033[0m')
+    // console.log('\033[40;35m TEST \033[0m')
+    // console.log('\033[40;36m TEST \033[0m')
+    // console.log('\033[40;37m TEST \033[0m')
+    console.log('\033[2J');
+    console.log('')
+    console.log(' ==================== DNS_Server START ==================== ')
+    console.log(' =============== DNS_Server Address ' + address.address + ' =============== ')
+    console.log(' =============== DNS_Server Port    ' + address.port + '      =============== ')
+    console.log('')
 })
 
 // On linux or Mac, run node with sudo. Because port 53 is lower then 1024.
 DNS_Server.bind(53)
+
